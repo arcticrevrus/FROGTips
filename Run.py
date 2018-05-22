@@ -13,7 +13,7 @@ from Settings import IDENT
 def joinChannel(user, newjoin):
 	print(user)
 	Thread(target = chatBot, args=(user,newjoin)).start()
-	
+
 
 def chatBot(chan, newjoin):
 	lasttip = datetime.datetime.now()
@@ -21,11 +21,15 @@ def chatBot(chan, newjoin):
 	joinRoom(s, chan, newjoin)
 	readbuffer = ""
 	close = False
+
 	while close != True:
 		readbuffer = readbuffer + s.recv(1024).decode("UTF-8")
 		temp = str.split(readbuffer, "\n")
 		readbuffer = temp.pop()
-		
+		if lasttip < datetime.datetime.now()-datetime.timedelta(hours=1):
+			lasttip = datetime.datetime.now()
+			commandFROGTip(s, chan)
+
 		for line in temp:
 			print(line)
 			# reply to IRC PING's so we dont get disconnected
@@ -75,8 +79,6 @@ def chatBot(chan, newjoin):
 				else:
 					sendMessage(s, chan, "Hop off, you aren't the channel owner.")
 				break
-			if lasttip < datetime.datetime.now()-datetime.timedelta(hours=1):
-				commandFROGTip(s, chan)
 		time.sleep(0.2)
 		pass
 	
