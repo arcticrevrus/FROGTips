@@ -4,5 +4,7 @@ PORT = 6667
 PASS = ""
 #Bot username
 IDENT = ""
-#which channel to join (must be all lowercase)
-CHANNEL = ""
+# FROGTips API v3 UUID
+UUID = ""
+#FROGTips API v3 Secret Passphrase
+PASSPHRASE = ""
