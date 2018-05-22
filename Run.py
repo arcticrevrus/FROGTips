@@ -2,10 +2,9 @@ import string, subprocess, random, re, threading, time, datetime
 from Read import getUser, getMessage
 from Socket import openSocket, sendMessage
 from Initialize import joinRoom
-from Settings import CHANNEL
 from Commands import *
 from threading import Thread
-
+from Settings import IDENT
 
 
 
@@ -45,7 +44,7 @@ def chatBot(chan, newjoin):
 					break
 			if re.search(r'^!join', message, re.IGNORECASE):
 				print(chan)
-				if chan == 'frogtips':
+				if chan == IDENT.lower():
 					if user not in users:
 						newjoin = True
 						users.append(user)
