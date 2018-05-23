@@ -1,4 +1,4 @@
-import string, subprocess, random, re, threading, time, datetime
+import string, subprocess, random, re, threading, time, datetime, json
 from Read import getUser, getMessage
 from Socket import openSocket, sendMessage
 from Initialize import joinRoom
@@ -51,12 +51,12 @@ def chatBot(chan, newjoin):
 				if chan == IDENT.lower():
 					if user not in users:
 						newjoin = True
-						users.append(user)
+						users[user] = [0]
 						sendMessage(s, chan, "Joining " + user + "'s channel. If you would like FROGTips to hop off, type !leave in your channel while FROG is nearby.")
 						joinChannel(user, newjoin)
-						with open ('users.txt', 'a') as f:
-							f.write(user + "\n")
-							f.close()
+						with open('users.txt', 'w') as file:
+							file.write(json.dumps(users))
+							file.close
 					else:
 						sendMessage(s, chan, "FROGTips is already in this channel. Please do not hog FROG")
 					break
@@ -67,14 +67,11 @@ def chatBot(chan, newjoin):
 			if re.search(r'^!leave', message, re.IGNORECASE):
 				if chan == user:
 					sendMessage(s, chan, "Leaving " + user + "'s channel. D:")
-					f = open("users.txt", "r")
-					lines = f.readlines()
-					f.close()
-					f = open("users.txt", "w")
-					for line in lines:
-						if line!=user + "\n":
-							f.write(line)
-					users.remove(user)
+					del users[user]
+					print(users)
+					with open('users.txt', 'w') as file:
+						file.write(json.dumps(users))
+						file.close
 					close = True
 				else:
 					sendMessage(s, chan, "Hop off, you aren't the channel owner.")
@@ -83,11 +80,12 @@ def chatBot(chan, newjoin):
 		pass
 	
 #Start Thread and connect to chat
-with open ('users.txt') as f:
-	users = f.read().splitlines()
-for item in users:
+js = open('users.txt')
+users = json.load(js)
+js.close()
+for key in users:
 	newjoin = False
-	t = Thread(target = chatBot, args=(item, newjoin))
+	t = Thread(target = chatBot, args=(key, newjoin))
 	t.start()	
 while True:
 	time.sleep(0.2)
