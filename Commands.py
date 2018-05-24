@@ -1,4 +1,4 @@
-import os, random, time, requests, random
+import os, random, time, requests, random, re
 from requests.auth import HTTPBasicAuth
 from Socket import openSocket, sendMessage
 from Settings import *

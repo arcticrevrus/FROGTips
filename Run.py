@@ -5,7 +5,6 @@ from Initialize import joinRoom
 from Commands import *
 from threading import Thread
 from Settings import IDENT
-from UserSettings import *
 
 
 # Connect to IRC/Channel and start listening
@@ -27,9 +26,17 @@ def chatBot(chan, newjoin):
 		readbuffer = readbuffer + s.recv(1024).decode("UTF-8")
 		temp = str.split(readbuffer, "\n")
 		readbuffer = temp.pop()
+		js = open('users.txt')
+		users = json.load(js)
+		js.close()
+		
+		# User Settings Go Here
+		caps = users[chan][0]
+		
 		if lasttip < datetime.datetime.now()-datetime.timedelta(hours=1):
 			lasttip = datetime.datetime.now()
-			commandFROGTip(s, chan)
+			commandFROGTip(s, chan, caps)
+			
 
 		for line in temp:
 			print(line)
@@ -44,10 +51,6 @@ def chatBot(chan, newjoin):
 			#Listen for !frogtip command
 			if re.search(r'^!frogtip', message, re.IGNORECASE):
 				if lasttip < datetime.datetime.now()-datetime.timedelta(seconds=15):
-					if settingCaps(users, chan) == True:
-						caps = True
-					else:
-						caps = False
 					commandFROGTip(s, chan, caps)
 					lasttip = datetime.datetime.now()
 					break
@@ -81,11 +84,30 @@ def chatBot(chan, newjoin):
 				else:
 					sendMessage(s, chan, "Hop off, you aren't the channel owner.")
 				break
+			if re.search (r'^!caps', message, re.IGNORECASE):
+				if chan == IDENT.lower():
+					sendMessage(s, chan, "Toggling CAPS in " + user +"'s channel.")
+					print(users[user][0])
+					if users[user][0] == 1:
+						users[user][0] = 0
+						with open('users.txt', 'w') as file:
+							file.write(json.dumps(users))
+							file.close
+					else:
+						users[user][0] = 1
+						with open('users.txt', 'w') as file:
+							file.write(json.dumps(users))
+							file.close
+					break
+				break
 		time.sleep(0.2)
 		if lastping < datetime.datetime.now()-datetime.timedelta(minutes=7):
 			chatBot(chan, newjoin)
 			close = True
 		pass
+		
+		
+		
 	
 #Start Thread and connect to chat
 js = open('users.txt')
