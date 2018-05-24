@@ -5,7 +5,7 @@ from Initialize import joinRoom
 from Commands import *
 from threading import Thread
 from Settings import IDENT
-
+from UserSettings import *
 
 
 # Connect to IRC/Channel and start listening
@@ -23,6 +23,7 @@ def chatBot(chan, newjoin):
 	close = False
 
 	while close != True:
+		lastping = datetime.datetime.now()
 		readbuffer = readbuffer + s.recv(1024).decode("UTF-8")
 		temp = str.split(readbuffer, "\n")
 		readbuffer = temp.pop()
@@ -43,7 +44,11 @@ def chatBot(chan, newjoin):
 			#Listen for !frogtip command
 			if re.search(r'^!frogtip', message, re.IGNORECASE):
 				if lasttip < datetime.datetime.now()-datetime.timedelta(seconds=15):
-					commandFROGTip(s, chan)
+					if settingCaps(users, chan) == True:
+						caps = True
+					else:
+						caps = False
+					commandFROGTip(s, chan, caps)
 					lasttip = datetime.datetime.now()
 					break
 			if re.search(r'^!join', message, re.IGNORECASE):
@@ -77,6 +82,9 @@ def chatBot(chan, newjoin):
 					sendMessage(s, chan, "Hop off, you aren't the channel owner.")
 				break
 		time.sleep(0.2)
+		if lastping < datetime.datetime.now()-datetime.timedelta(minutes=7):
+			chatBot(chan, newjoin)
+			close = True
 		pass
 	
 #Start Thread and connect to chat
@@ -87,6 +95,3 @@ for key in users:
 	newjoin = False
 	t = Thread(target = chatBot, args=(key, newjoin))
 	t.start()	
-while True:
-	time.sleep(0.2)
-	pass
